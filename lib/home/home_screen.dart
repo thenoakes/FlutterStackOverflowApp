@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterstackapp/home/index.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/style.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+/// This is the 'Home Screen' widget which is presented by the Home Page
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     Key key,
@@ -9,11 +13,12 @@ class HomeScreen extends StatefulWidget {
   })  : _homeBloc = homeBloc,
         super(key: key);
 
+  /// A BLOC for handling Home Page logic
   final HomeBloc _homeBloc;
 
   @override
   HomeScreenState createState() {
-    return new HomeScreenState(_homeBloc);
+    return HomeScreenState(_homeBloc);
   }
 }
 
@@ -21,6 +26,7 @@ class HomeScreenState extends State<HomeScreen> {
   final HomeBloc _homeBloc;
   HomeScreenState(this._homeBloc);
 
+  // Dispatch the LoadHomeEvent
   @override
   void initState() {
     super.initState();
@@ -32,6 +38,7 @@ class HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // Build the screen according to the current state
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeEvent, HomeState>(
@@ -46,9 +53,9 @@ class HomeScreenState extends State<HomeScreen> {
             );
           }
           if (currentState is ErrorHomeState) {
-            return new Container(
-                child: new Center(
-              child: new Text(currentState.errorMessage ?? 'Error'),
+            return Container(
+                child: Center(
+              child: Text(currentState.errorMessage ?? 'Error'),
             ));
           }
           if (currentState is InHomeState) {
@@ -109,10 +116,7 @@ class HomeScreenState extends State<HomeScreen> {
                     child: ListView.builder(
                       itemCount: questionData.questions.length,
                       itemBuilder: (context, i) {
-                        Questions questions = questionData.questions[i];
-                        String tags = questions.tags;
-                        tags = tags.substring(1, tags.length - 1);
-                        var tagList = tags.split(",");
+                        Question question = questionData.questions[i];
                         return ListTile(
                           dense: true,
                           isThreeLine: true,
@@ -120,23 +124,27 @@ class HomeScreenState extends State<HomeScreen> {
                             radius: 25,
                             foregroundColor: Colors.white,
                             backgroundColor: Colors.blueGrey,
-                            child: Text(questions.voteCount.toString()),
+                            child: Text(question.score.toString()),
                           ),
-                          title: Text(questions.question),
+                          title: Html(
+                              data: question.question,
+                              style: {
+                                "code": Style.fromTextStyle(GoogleFonts.robotoMono(color: Color(0xFF474747)))
+                              }),
                           trailing: Chip(
                             backgroundColor: Colors.blueGrey,
                             shape: BeveledRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             label: Text(
-                              questions.views,
+                              question.views.toString(),
                               style: TextStyle(
                                 color: Colors.white,
                               ),
                             ),
                           ),
                           subtitle: Wrap(
-                            children: tagList
+                            children: question.tags
                                 .map((t) => Padding(
                                     padding: EdgeInsets.all(5),
                                     child: Chip(
@@ -158,6 +166,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
             );
           }
+          return Container();
         });
   }
 }
